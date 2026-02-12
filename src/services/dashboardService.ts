@@ -18,11 +18,11 @@ export const getDashboardStats = async () => {
 
   const { data: totalReleased } = await supabase
     .from("loans")
-    .select("total_amount")
+    .select("principal_amount")
     .eq("coop_id", coopId)
 
   const total = totalReleased?.reduce(
-    (sum, loan) => sum + Number(loan.total_amount),
+    (sum, loan) => sum + Number(loan.principal_amount),
     0
   )
 
