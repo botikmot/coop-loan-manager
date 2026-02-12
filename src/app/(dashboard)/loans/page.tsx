@@ -50,7 +50,14 @@ export default function LoansPage() {
         <tbody>
           {loans.map((loan) => (
             <tr key={loan.id} className="border-t">
-              <td className="p-3">{loan.members?.full_name}</td>
+              <td className="p-3">
+                <Link
+                  href={`/loans/${loan.id}`}
+                  className="text-blue-600 underline"
+                >
+                 {loan.members?.full_name}
+                </Link>
+              </td>
               <td className="p-3">{formatCurrency(loan.principal_amount)}</td>
               <td className="p-3">{loan.interest_rate}%</td>
               <td className="p-3">{loan.term_months} months</td>

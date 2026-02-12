@@ -27,8 +27,6 @@ export const createLoan = async (
 
   const { interest, total, monthly } = calculateLoan(principal, interest_rate, term);
 
-  //const total_amount = principal + (principal * interest_rate) / 100
-
   const { error } = await supabase.from("loans").insert({
     coop_id: coopId,
     member_id,
@@ -42,4 +40,38 @@ export const createLoan = async (
   })
 
   if (error) throw error
+}
+
+export const getLoanById = async (loanId: string) => {
+  const { data: loan, error: loanError } = await supabase
+    .from("loans")
+    .select("*")
+    .eq("id", loanId)
+    .single()
+
+  if (loanError) throw loanError
+
+  const { data: member, error: memberError } = await supabase
+    .from("members")
+    .select("full_name")
+    .eq("id", loan.member_id)
+    .single()
+
+  if (memberError) throw memberError
+
+  return {
+    ...loan,
+    memberName: member.full_name
+  }
+}
+
+export const getPaymentsByLoanId = async (loanId: string) => {
+  const { data, error } = await supabase
+    .from("payments")
+    .select("*")
+    .eq("loan_id", loanId)
+    .order("created_at", { ascending: true })
+
+  if (error) throw error
+  return data || []
 }
