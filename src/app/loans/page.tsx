@@ -41,6 +41,7 @@ export default function LoansPage() {
             <th className="p-3 text-left">Interest %</th>
             <th className="p-3 text-left">Term</th>
             <th className="p-3 text-left">Total</th>
+            <th className="p-3 text-left">Monthly</th>
             <th className="p-3 text-left">Status</th>
             <th className="p-3 text-left">Balance</th>
             <th></th>
@@ -54,6 +55,7 @@ export default function LoansPage() {
               <td className="p-3">{loan.interest_rate}%</td>
               <td className="p-3">{loan.term_months} months</td>
               <td className="p-3">{formatCurrency(loan.total_payable)}</td>
+              <td className="p-3">{formatCurrency(loan.monthly_payment)}</td>
               <td className="p-3">{loan.status}</td>
               <td className="p-3">{formatCurrency(loan.remaining_balance)}</td>
               <td className="p-3">
