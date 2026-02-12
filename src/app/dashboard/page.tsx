@@ -3,11 +3,19 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/src/lib/supabase"
+import { getDashboardStats } from "@/src/services/dashboardService"
+import { getUserCoopName } from "@/src/lib/auth"
 
 export default function DashboardPage() {
-  const router = useRouter()
-  const [coopName, setCoopName] = useState("")
+  const router = useRouter()  
   const [loading, setLoading] = useState(true)
+  const [coopName, setCoopName] = useState("")
+
+  const [stats, setStats] = useState({
+    memberCount: 0,
+    activeLoans: 0,
+    totalReleased: 0,
+  })
 
   useEffect(() => {
     const loadData = async () => {
@@ -20,24 +28,12 @@ export default function DashboardPage() {
         return
       }
 
-      // Get coop_id from users table
-      const { data: userData } = await supabase
-        .from("users")
-        .select("coop_id")
-        .eq("id", user.id)
-        .single()
+      const coopName = await getUserCoopName()
+      setCoopName(coopName)
 
-      if (userData) {
-        const { data: coop } = await supabase
-          .from("cooperatives")
-          .select("name")
-          .eq("id", userData.coop_id)
-          .single()
-
-        if (coop) {
-          setCoopName(coop.name)
-        }
-      }
+      // Get dashboard stats
+      const dashboardStats = await getDashboardStats()
+      setStats(dashboardStats)
 
       setLoading(false)
     }
@@ -67,21 +63,29 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {/* Content */}
+      {/* Stats */}
       <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded shadow">
           <h2 className="text-lg font-semibold">Total Members</h2>
-          <p className="text-2xl mt-2 font-bold">0</p>
+          <p className="text-2xl mt-2 font-bold">
+            {stats.memberCount}
+          </p>
         </div>
 
         <div className="bg-white p-6 rounded shadow">
           <h2 className="text-lg font-semibold">Active Loans</h2>
-          <p className="text-2xl mt-2 font-bold">0</p>
+          <p className="text-2xl mt-2 font-bold">
+            {stats.activeLoans}
+          </p>
         </div>
 
         <div className="bg-white p-6 rounded shadow">
-          <h2 className="text-lg font-semibold">Total Loan Released</h2>
-          <p className="text-2xl mt-2 font-bold">₱ 0.00</p>
+          <h2 className="text-lg font-semibold">
+            Total Loan Released
+          </h2>
+          <p className="text-2xl mt-2 font-bold">
+            ₱ {stats.totalReleased.toLocaleString()}
+          </p>
         </div>
       </div>
     </div>
