@@ -14,6 +14,7 @@ import {
   Landmark,
   Settings,
   LogOut,
+  NotebookText
 } from "lucide-react"
 
 export default function DashboardLayout({
@@ -93,6 +94,15 @@ export default function DashboardLayout({
           >
             <Landmark className="mr-2 h-4 w-4" />
             Loans
+          </Button>
+
+          <Button
+            variant={pathname === "/reports" ? "secondary" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => router.push("/reports")}
+          >
+            <NotebookText className="mr-2 h-4 w-4" />
+            Reports
           </Button>
 
           <Button

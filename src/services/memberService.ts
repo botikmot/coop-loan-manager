@@ -39,20 +39,18 @@ export const createMember = async (
 
 export const updateMember = async (
   id: string,
-  full_name: string,
-  contact_number: string,
-  address: string
-) => {
-  if (!full_name.trim()) {
-    throw new Error("Full name is required")
+  member: {
+    name: string
+    contact_number: string
+    address: string
   }
-
+) => {
   const { error } = await supabase
     .from("members")
     .update({
-      full_name,
-      contact_number,
-      address,
+      full_name: member.name,
+      contact_number: member.contact_number,
+      address: member.address,
     })
     .eq("id", id)
 
