@@ -1,93 +1,103 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import { supabase } from "@/src/lib/supabase"
-import Link from "next/link"
-import { getMembers } from "@/src/services/memberService"
-import { deleteMember } from "@/src/services/memberService"
-
-type Member = {
-  id: string
-  full_name: string
-  contact_number: string
-  address: string
-}
+import { getMembers, deleteMember, createMember, updateMember } from "@/src/services/memberService"
+import MemberTable from "@/src/components/tables/MemberTable"
+import MemberForm from "@/src/components/forms/MemberForm"
+import Modal from "@/src/components/ui/Modal"
+import { Button } from "@/components/ui/button"
+import { Member } from "@/src/types/member"
 
 export default function MembersPage() {
-  const router = useRouter()
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
 
+  const [openModal, setOpenModal] = useState(false)
+  const [editingMember, setEditingMember] = useState<Member | null>(null)
+
+  const loadMembers = async () => {
+    const data = await getMembers()
+    if (data) setMembers(data)
+  }
+
   useEffect(() => {
-    const loadMembers = async () => {
+    const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return router.push("/auth/login")
+      if (!user) return
 
-      const data = await getMembers()
-
-      if (data) setMembers(data)
+      await loadMembers()
       setLoading(false)
     }
 
-    loadMembers()
-  }, [router])
+    init()
+  }, [])
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this member?")) return
+    await deleteMember(id)
+    await loadMembers()
+  }
+
+  const openAddModal = () => {
+    setEditingMember(null)
+    setOpenModal(true)
+  }
+
+  const openEditModal = (member: Member) => {
+    setEditingMember(member)
+    setOpenModal(true)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSubmit = async (data: any) => {
+    if (editingMember) {
+      await updateMember(editingMember.id, data)
+    } else {
+      await createMember(
+        data.name,
+        data.contact_number,
+        data.address
+      )
+    }
+
+    setOpenModal(false)
+    await loadMembers()
+  }
 
   if (loading) return <p className="p-6">Loading...</p>
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between mb-6">
-        <h1 className="text-xl font-bold">Members</h1>
-        <Link
-          href="/members/add"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
+    <div className="p-6 space-y-6">
+
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Members</h1>
+
+        <Button onClick={openAddModal}>
           + Add Member
-        </Link>
+        </Button>
       </div>
 
-      <div className="bg-white shadow rounded">
-        <table className="w-full">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-3 text-left">Name</th>
-              <th className="p-3 text-left">Contact</th>
-              <th className="p-3 text-left">Address</th>
-              <th className="p-3 text-left">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((member) => (
-              <tr key={member.id} className="border-t">
-                <td className="p-3">{member.full_name}</td>
-                <td className="p-3">{member.contact_number}</td>
-                <td className="p-3">{member.address}</td>
-                <td className="p-3">
-                  <Link
-                    href={`/members/${member.id}/edit`}
-                    className="text-blue-600 underline"
-                  >
-                    Edit
-                  </Link>
-                  <button
-                        onClick={async () => {
-                            if (confirm("Delete this member?")) {
-                            await deleteMember(member.id)
-                            const updated = await getMembers()
-                            setMembers(updated)
-                            }
-                        }}
-                        className="text-red-600 ml-4"
-                        >
-                        Delete
-                    </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="bg-white rounded-xl shadow p-4">
+        <MemberTable
+          members={members}
+          onEdit={openEditModal}
+          onDelete={handleDelete}
+        />
       </div>
+
+      {/* Modal */}
+      <Modal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        title={editingMember ? "Edit Member" : "Add Member"}
+      >
+        <MemberForm
+          initialData={editingMember || undefined}
+          onSubmit={handleSubmit}
+        />
+      </Modal>
+
     </div>
   )
 }
