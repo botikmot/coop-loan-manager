@@ -56,8 +56,8 @@ export default function MemberForm({ initialData, onSubmit }: Props) {
           }
         />
       </div>
-
-      <Button type="submit">Save Member</Button>
+        
+      <Button className="cursor-pointer hover:bg-gray-600" type="submit">Save Member</Button>
     </form>
   )
 }

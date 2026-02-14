@@ -10,6 +10,13 @@ import {
   TableRow,
 } from "@/src/components/ui/Table"
 import Link from "next/link"
+import { PlusCircle, FileText } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface LoanTableProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,17 +26,18 @@ interface LoanTableProps {
 
 export default function LoanTable({ loans }: LoanTableProps) {
   return (
+    <TooltipProvider>
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Member</TableHead>
-          <TableHead>Principal</TableHead>
-          <TableHead>Interest %</TableHead>
-          <TableHead>Term</TableHead>
-          <TableHead>Total</TableHead>
-          <TableHead>Monthly</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Balance</TableHead>
+          <TableHead className="font-bold">Member</TableHead>
+          <TableHead className="font-bold">Principal</TableHead>
+          <TableHead className="font-bold">Interest %</TableHead>
+          <TableHead className="font-bold">Term</TableHead>
+          <TableHead className="font-bold">Total</TableHead>
+          <TableHead className="font-bold">Monthly</TableHead>
+          <TableHead className="font-bold">Status</TableHead>
+          <TableHead className="font-bold">Balance</TableHead>
         </TableRow>
       </TableHeader>
 
@@ -42,26 +50,49 @@ export default function LoanTable({ loans }: LoanTableProps) {
             <TableCell>{loan.term_months} mo</TableCell>
             <TableCell>{formatCurrency(loan.total_payable)}</TableCell>
             <TableCell>{formatCurrency(loan.monthly_payment)}</TableCell>
-            <TableCell>{loan.status}</TableCell>
+            <TableCell className={`${loan.status === 'completed' ? 'text-green-500 capitalize' : 'capitalize'}`}>{loan.status}</TableCell>
             <TableCell>{formatCurrency(loan.remaining_balance)}</TableCell>
-            <TableCell className="space-x-4">
-              <Link
-                    href={`/loans/${loan.id}/payment`}
-                    className="text-blue-600 underline"
-                >
-                    Add Payment
-                </Link>
+            <TableCell>
+              <div className="flex gap-2">
 
-                <Link
-                    href={`/loans/${loan.id}`}
-                    className="text-blue-600 underline"
+                {/* Record Payment */}
+                {loan.status !== "completed" && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href={`/loans/${loan.id}/payment`}
+                        className="p-2 rounded-md hover:bg-muted text-blue-600"
+                      >
+                        <PlusCircle size={18} />
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      Record Payment
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+
+                {/* Loan Summary */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={`/loans/${loan.id}`}
+                      className="p-2 rounded-md hover:bg-muted text-gray-700"
                     >
-                    Summary
-                </Link>
+                      <FileText size={18} />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    View Summary
+                  </TooltipContent>
+                </Tooltip>
+
+              </div>
             </TableCell>
           </TableRow>
         ))}
       </TableBody>
     </Table>
+    </TooltipProvider>
   )
 }

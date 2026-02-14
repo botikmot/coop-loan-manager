@@ -34,7 +34,6 @@ export default function MembersPage() {
   }, [])
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this member?")) return
     await deleteMember(id)
     await loadMembers()
   }
@@ -73,7 +72,7 @@ export default function MembersPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Members</h1>
 
-        <Button onClick={openAddModal}>
+        <Button className="cursor-pointer hover:bg-gray-500" onClick={openAddModal}>
           + Add Member
         </Button>
       </div>
