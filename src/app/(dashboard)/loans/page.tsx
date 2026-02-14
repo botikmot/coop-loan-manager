@@ -33,7 +33,7 @@ export default function LoansPage() {
     <div className="p-6">
       <div className="flex justify-between mb-6">
         <h1 className="text-xl font-bold">Loans</h1>
-        <Button onClick={() => setShowModal(true)}>+ Add Loan</Button>
+        <Button className="cursor-pointer hover:bg-gray-600" onClick={() => setShowModal(true)}>+ Add Loan</Button>
       </div>
 
       <div className="bg-white rounded-xl shadow p-4">
