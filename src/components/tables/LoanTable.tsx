@@ -28,13 +28,32 @@ interface LoanTableProps {
   onSearch: (value: string) => void
   page: number
   totalPages: number
+  setSortBy: (value: string) => void
+  sortDir: "asc" | "desc"
+  setSortDir: React.Dispatch<React.SetStateAction<"asc" | "desc">>
   onPageChange: (page: number) => void
   onAddPayment?: (loanId: string) => void
 }
 
-export default function LoanTable({ loans, search, onSearch, page, totalPages, onPageChange, onAddPayment }: LoanTableProps) {
+export default function LoanTable(
+  { 
+    loans, 
+    search, 
+    onSearch, 
+    page, 
+    totalPages, 
+    setSortBy, 
+    sortDir, 
+    setSortDir, 
+    onPageChange, 
+    onAddPayment 
+  }: LoanTableProps) {
   
-  const pageSize = 10
+  /* const pageSize = 10
+  const paginatedLoans = useMemo(() => {
+    const start = (page - 1) * pageSize
+    return filteredLoans.slice(start, start + pageSize)
+  }, [filteredLoans, page]) */
 
   //Filter loans by member name
   const filteredLoans = useMemo(() => {
@@ -44,11 +63,6 @@ export default function LoanTable({ loans, search, onSearch, page, totalPages, o
         .includes(search.toLowerCase())
     )
   }, [loans, search])
-
-  const paginatedLoans = useMemo(() => {
-    const start = (page - 1) * pageSize
-    return filteredLoans.slice(start, start + pageSize)
-  }, [filteredLoans, page])
 
 
   return (
@@ -64,7 +78,7 @@ export default function LoanTable({ loans, search, onSearch, page, totalPages, o
         />
 
         <p className="text-sm text-muted-foreground">
-          {filteredLoans.length} result(s)
+          {/* {filteredLoans.length} result(s) */}
         </p>
       </div>
 
@@ -72,7 +86,16 @@ export default function LoanTable({ loans, search, onSearch, page, totalPages, o
       <TableHeader>
         <TableRow>
           <TableHead className="font-bold">Member</TableHead>
-          <TableHead className="font-bold">Principal</TableHead>
+          <TableHead 
+            className="font-bold cursor-pointer"
+            onClick={() => {
+              setSortBy("principal_amount")
+              setSortDir(sortDir === "asc" ? "desc" : "asc")
+              onPageChange(1)
+            }}
+          >
+            Principal
+          </TableHead>
           <TableHead className="font-bold">Interest %</TableHead>
           <TableHead className="font-bold">Term</TableHead>
           <TableHead className="font-bold">Total</TableHead>
@@ -84,7 +107,7 @@ export default function LoanTable({ loans, search, onSearch, page, totalPages, o
       </TableHeader>
 
       <TableBody>
-          {paginatedLoans.map((loan) => (
+          {filteredLoans.map((loan) => (
             <TableRow key={loan.id}>
               <TableCell>{loan.members?.full_name}</TableCell>
               <TableCell>{formatCurrency(loan.principal_amount)}</TableCell>
