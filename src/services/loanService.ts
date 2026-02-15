@@ -2,7 +2,7 @@ import { supabase } from "@/src/lib/supabase"
 import { getUserCoopId } from "@/src/lib/auth"
 import { calculateLoan } from "../lib/loanCalculator"
 
-export const getLoans = async () => {
+/* export const getLoans = async () => {
   const coopId = await getUserCoopId()
   if (!coopId) throw new Error("Unauthorized")
 
@@ -14,6 +14,50 @@ export const getLoans = async () => {
 
   if (error) throw error
   return data ?? []
+} */
+
+export async function getLoans({
+  page = 1,
+  limit = 10,
+  search = "",
+  sortBy = "created_at",
+  sortDir = "desc",
+}) {
+  const from = (page - 1) * limit
+  const to = from + limit - 1
+
+  let query = supabase
+    .from("loans")
+    .select(`
+      id,
+      principal_amount,
+      interest_rate,
+      term_months,
+      total_payable,
+      monthly_payment,
+      remaining_balance,
+      status,
+      created_at,
+      members(full_name)
+    `, { count: "exact" })
+    .range(from, to)
+    .order(sortBy, { ascending: sortDir === "asc" })
+
+  if (search) {
+    query = query.ilike("members.full_name", `%${search}%`)
+  }
+
+  const { data, count, error } = await query
+
+  if (error) throw error
+
+  return {
+    loans: data ?? [],
+    total: count ?? 0,
+    page,
+    limit,
+    totalPages: Math.ceil((count ?? 0) / limit),
+  }
 }
 
 export const createLoan = async (

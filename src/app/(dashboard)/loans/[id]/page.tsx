@@ -8,9 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/src/utils/formatCurrency"
+import PaymentModal from "@/src/components/ui/PaymentModal"
+import { useRouter } from "next/navigation"
 
 export default function LoanDetailsPage() {
   const params = useParams()
+  const router = useRouter()
   const rawLoanId = params.id
   const loanId = Array.isArray(rawLoanId) ? rawLoanId[0] : rawLoanId
 
@@ -19,11 +22,12 @@ export default function LoanDetailsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [payments, setPayments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [paymentLoanId, setPaymentLoanId] = useState<string | null>(null)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
 
-  useEffect(() => {
-    if (!loanId) return
+  const loadData = async () => {
+      if (!loanId) return
 
-    const loadData = async () => {
       try {
         // Fetch loan
         const loanData = await getLoanById(loanId)
@@ -40,7 +44,9 @@ export default function LoanDetailsPage() {
       }
     }
 
+  useEffect(() => {
     loadData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loanId])
 
   // Compute running balance safely
@@ -56,7 +62,10 @@ export default function LoanDetailsPage() {
   }, [payments, loan])
 
   const handleRecordPayment = () => {
-    alert("Open Record Payment modal or navigate to Record Payment page")
+    if (!loanId) return
+
+    setPaymentLoanId(loanId)
+    setShowPaymentModal(true)
   }
 
   const handlePrintSummary = () => {
@@ -94,12 +103,22 @@ export default function LoanDetailsPage() {
       </Card>
 
       {/* Action Buttons */}
-      <div className="flex space-x-2">
-        <Button variant="default" onClick={handleRecordPayment}>
-          Record Payment
-        </Button>
-        <Button variant="outline" onClick={handlePrintSummary}>
-          Print Loan Summary
+      <div className="flex justify-between">
+        <div className="flex space-x-2">
+          <Button
+              className="cursor-pointer"
+              onClick={handleRecordPayment}
+              disabled={loan.status === "completed"}
+            >
+              Record Payment
+          </Button>
+          <Button className="cursor-pointer" variant="outline" onClick={handlePrintSummary}>
+            Print Loan Summary
+          </Button>
+        </div>
+
+        <Button className="cursor-pointer" variant="ghost" onClick={() => router.back()}>
+          ← Back
         </Button>
       </div>
 
@@ -135,6 +154,13 @@ export default function LoanDetailsPage() {
           )}
         </CardContent>
       </Card>
+
+      <PaymentModal
+        open={showPaymentModal}
+        loanId={paymentLoanId}
+        onClose={() => setShowPaymentModal(false)}
+        onSaved={loadData}
+      />
 
     </div>
   )

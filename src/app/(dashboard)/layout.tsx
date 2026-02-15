@@ -71,7 +71,7 @@ export default function DashboardLayout({
         <nav className="flex-1 p-4 space-y-2">
           <Button
             variant={pathname === "/dashboard" ? "secondary" : "ghost"}
-            className="w-full justify-start"
+            className="w-full justify-start cursor-pointer"
             onClick={() => router.push("/dashboard")}
           >
             <LayoutDashboard className="mr-2 h-4 w-4" />
@@ -80,7 +80,7 @@ export default function DashboardLayout({
 
           <Button
             variant={pathname === "/members" ? "secondary" : "ghost"}
-            className="w-full justify-start"
+            className="w-full justify-start cursor-pointer"
             onClick={() => router.push("/members")}
           >
             <Users className="mr-2 h-4 w-4" />
@@ -89,7 +89,7 @@ export default function DashboardLayout({
 
           <Button
             variant={pathname === "/loans" ? "secondary" : "ghost"}
-            className="w-full justify-start"
+            className="w-full justify-start cursor-pointer"
             onClick={() => router.push("/loans")}
           >
             <Landmark className="mr-2 h-4 w-4" />
@@ -98,7 +98,7 @@ export default function DashboardLayout({
 
           <Button
             variant={pathname === "/reports" ? "secondary" : "ghost"}
-            className="w-full justify-start"
+            className="w-full justify-start cursor-pointer"
             onClick={() => router.push("/reports")}
           >
             <NotebookText className="mr-2 h-4 w-4" />
@@ -107,7 +107,7 @@ export default function DashboardLayout({
 
           <Button
             variant={pathname === "/settings" ? "secondary" : "ghost"}
-            className="w-full justify-start"
+            className="w-full justify-start cursor-pointer"
             onClick={() => router.push("/settings")}
           >
             <Settings className="mr-2 h-4 w-4" />
@@ -118,7 +118,7 @@ export default function DashboardLayout({
         <div className="p-4">
           <Button
             variant="destructive"
-            className="w-full"
+            className="w-full cursor-pointer"
             onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
