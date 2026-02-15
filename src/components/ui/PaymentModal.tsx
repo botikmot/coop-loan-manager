@@ -1,41 +1,69 @@
 "use client"
 
 import { useState } from "react"
-import Modal from "./Modal"
+import Modal from "@/src/components/ui/Modal"
 import { createPayment } from "@/src/services/paymentService"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function PaymentModal({ loanId, onClose, onSaved }: any) {
+interface Props {
+  open: boolean
+  onClose: () => void
+  loanId: string | null
+  onSaved: () => void
+}
+
+export default function PaymentModal({
+  open,
+  onClose,
+  loanId,
+  onSaved,
+}: Props) {
   const [amount, setAmount] = useState("")
+  const [loading, setLoading] = useState(false)
 
-  if (!loanId) return null
+  const handleSave = async () => {
+    if (!loanId) return
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleSubmit = async (e: any) => {
-    e.preventDefault()
+    try {
+      setLoading(true)
 
-    await createPayment(loanId, Number(amount))
+      await createPayment(loanId, Number(amount))
 
-    onSaved()
-    onClose()
+      toast.success("Payment recorded")
+
+      onSaved()
+      onClose()
+      setAmount("")
+    } catch {
+      toast.error("Failed to record payment")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <Modal open={!!loanId} onClose={onClose} title="Record Payment">
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
+    <Modal open={open} onClose={onClose} title="Record Payment">
+      <div className="space-y-4">
+        <Input
           type="number"
-          placeholder="Payment Amount"
-          className="w-full border p-2 rounded"
+          placeholder="Payment amount"
           value={amount}
+          min={0}
           onChange={(e) => setAmount(e.target.value)}
-          required
         />
 
-        <button className="bg-green-600 text-white px-4 py-2 rounded w-full">
-          Save Payment
-        </button>
-      </form>
+        <Button
+          onClick={handleSave}
+          disabled={loading || !amount}
+          className="w-full cursor-pointer"
+        >
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {loading ? "Saving..." : "Save Payment"}
+        </Button>
+      </div>
     </Modal>
   )
 }
