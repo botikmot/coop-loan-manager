@@ -20,20 +20,36 @@ export default function LoansPage() {
   const pageSize = 10
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebounce(search)
+  const [sortBy, setSortBy] = useState("created_at")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
 
   // Define fetchLoans in component scope
   const fetchLoans = async () => {
-    const res = await getLoans({ page, limit: pageSize, search: debouncedSearch })
-    setLoans(res.loans)
-    setTotal(res.total)
-    setLoading(false)
+    setLoading(true)
+    try {
+      const res = await getLoans({
+        page,
+        limit: pageSize,
+        search: debouncedSearch,
+        sortBy,
+        sortDir,
+      })
+      setLoans(res.loans)
+      setTotal(res.total)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
     let isMounted = true
 
     const load = async () => {
-      const res = await getLoans({ page, limit: pageSize, search: debouncedSearch })
+      setLoading(true)
+
+      const res = await getLoans({ page, limit: pageSize, search: debouncedSearch, sortBy, sortDir })
 
       if (!isMounted) return
 
@@ -47,11 +63,18 @@ export default function LoansPage() {
     return () => {
       isMounted = false
     }
-  }, [page, debouncedSearch])
+  }, [page, debouncedSearch, sortBy, sortDir])
+
 
   const totalPages = Math.ceil(total / pageSize)
 
-  if (loading) return <p className="p-6">Loading...</p>
+  if (loading)
+    return (
+      <div className="p-6 space-y-3 animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-40"></div>
+        <div className="h-40 bg-gray-200 rounded"></div>
+      </div>
+    )
 
   return (
     <div className="p-6">
@@ -64,9 +87,15 @@ export default function LoansPage() {
         <LoanTable
          loans={loans}
          search={search}
-         onSearch={setSearch}
+         onSearch={(value) => {
+            setSearch(value)
+            setPage(1) // reset immediately when search changes
+          }}
          page={page}
          totalPages={totalPages}
+         setSortBy={setSortBy}
+         sortDir={sortDir}
+         setSortDir={setSortDir}
          onPageChange={setPage}
          onAddPayment={(loanId) => {
             setPaymentLoanId(loanId)

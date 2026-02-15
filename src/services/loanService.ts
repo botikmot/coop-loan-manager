@@ -2,19 +2,13 @@ import { supabase } from "@/src/lib/supabase"
 import { getUserCoopId } from "@/src/lib/auth"
 import { calculateLoan } from "../lib/loanCalculator"
 
-/* export const getLoans = async () => {
-  const coopId = await getUserCoopId()
-  if (!coopId) throw new Error("Unauthorized")
-
-  const { data, error } = await supabase
-    .from("loans")
-    .select("*, members(full_name)")
-    .eq("coop_id", coopId)
-    .order("created_at", { ascending: false })
-
-  if (error) throw error
-  return data ?? []
-} */
+interface GetLoansParams {
+  page?: number
+  limit?: number
+  search?: string
+  sortBy?: string
+  sortDir?: "asc" | "desc"
+}
 
 export async function getLoans({
   page = 1,
@@ -22,10 +16,11 @@ export async function getLoans({
   search = "",
   sortBy = "created_at",
   sortDir = "desc",
-}) {
+}: GetLoansParams) {
   const from = (page - 1) * limit
   const to = from + limit - 1
 
+  // Base query: loans + members
   let query = supabase
     .from("loans")
     .select(`
@@ -38,13 +33,15 @@ export async function getLoans({
       remaining_balance,
       status,
       created_at,
-      members(full_name)
+      members(id, full_name)
     `, { count: "exact" })
     .range(from, to)
     .order(sortBy, { ascending: sortDir === "asc" })
 
+  // Filter by member full_name if search exists
   if (search) {
-    query = query.ilike("members.full_name", `%${search}%`)
+    // Use filter with ilike on the foreign table
+    query = query.filter("members.full_name", "ilike", `%${search}%`)
   }
 
   const { data, count, error } = await query
