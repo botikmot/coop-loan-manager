@@ -19,37 +19,21 @@ export default function RegisterPage() {
     setError(null)
 
     try {
-      // Create Auth User
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, coopName }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Registration failed")
+
+      // ✅ Auto-login after successful registration
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        password,
+        password
       })
-
-      if (signUpError) throw signUpError
-      if (!data.user) throw new Error("User creation failed")
-
-      const userId = data.user.id
-
-      // Create Cooperative
-      const { data: coop, error: coopError } = await supabase
-        .from("cooperatives")
-        .insert({
-          name: coopName,
-          email,
-        })
-        .select()
-        .single()
-
-      if (coopError) throw coopError
-
-      // Link User to Cooperative
-      const { error: userError } = await supabase.from("users").insert({
-        id: userId,
-        coop_id: coop.id,
-        role: "admin",
-      })
-
-      if (userError) throw userError
+      if (signInError) throw signInError
 
       router.push("/dashboard")
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
