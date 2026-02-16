@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useMemo } from "react"
+import { Badge } from "@/components/ui/badge"
 
 interface LoanTableProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -116,7 +117,9 @@ export default function LoanTable(
               <TableCell>{formatCurrency(loan.total_payable)}</TableCell>
               <TableCell>{formatCurrency(loan.monthly_payment)}</TableCell>
               <TableCell className={`${loan.status === 'completed' ? 'text-green-500 capitalize' : 'capitalize'}`}>
-                {loan.status}
+                <Badge variant={loan.status === "active" ? "secondary" : "success"}>
+                  {loan.status}
+                </Badge>
               </TableCell>
               <TableCell>{formatCurrency(loan.remaining_balance)}</TableCell>
               <TableCell>
@@ -129,7 +132,7 @@ export default function LoanTable(
                         <Button
                           variant="ghost"
                           onClick={() => onAddPayment?.(loan.id)}
-                          className="p-2 hover:bg-muted text-blue-600"
+                          className="p-2 cursor-pointer hover:bg-muted text-blue-600"
                         >
                           <PlusCircle size={18} />
                         </Button>

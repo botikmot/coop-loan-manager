@@ -84,7 +84,7 @@ export default function SettingsPage() {
 
           {/* Editable Fields */}
           <div>
-            <Label>Cooperative Name</Label>
+            <Label className="pb-2">Cooperative Name</Label>
             <Input
               value={coop.name || ""}
               onChange={(e) => handleChange("name", e.target.value)}
@@ -92,7 +92,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <Label>Email</Label>
+            <Label className="pb-2">Email</Label>
             <Input
               value={coop.email || ""}
               onChange={(e) => handleChange("email", e.target.value)}
