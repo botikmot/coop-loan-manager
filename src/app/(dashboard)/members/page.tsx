@@ -64,7 +64,13 @@ export default function MembersPage() {
     await loadMembers()
   }
 
-  if (loading) return <p className="p-6">Loading...</p>
+  if (loading)
+    return (
+      <div className="p-6 space-y-3 animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-40"></div>
+        <div className="h-40 bg-gray-200 rounded"></div>
+      </div>
+    )
 
   return (
     <div className="p-6 space-y-6">

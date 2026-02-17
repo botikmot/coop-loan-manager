@@ -69,6 +69,38 @@ export default function SettingsPage() {
     setSaving(false)
   }
 
+  const today = new Date()
+
+  const trialEnds = coop?.trial_ends_at
+    ? new Date(coop.trial_ends_at)
+    : null
+
+  const subscriptionEnds = coop?.subscription_ends_at
+    ? new Date(coop.subscription_ends_at)
+    : null
+
+  const subscriptionRemainingDays = subscriptionEnds
+    ? Math.max(0, Math.ceil((subscriptionEnds.getTime() - today.getTime()) / 86400000))
+    : null
+  
+  const isActive = coop?.subscription_status === "active"
+
+  const remainingDays = trialEnds
+    ? Math.max(
+        0,
+        Math.ceil((trialEnds.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+      )
+    : null
+
+  const isTrialActive =
+    coop?.subscription_status === "trial" && remainingDays !== null && remainingDays > 0
+
+  const isTrialExpiringSoon =
+    isTrialActive && remainingDays <= 3   // change threshold if needed
+
+  const isExpired =
+  coop?.subscription_status === "trial" && remainingDays === 0
+
   if (loading) return <p className="p-6">Loading settings...</p>
   if (!coop) return <p className="p-6 text-red-500">Cooperative not found</p>
 
@@ -116,16 +148,36 @@ export default function SettingsPage() {
 
           <div className="flex items-center justify-between">
             <span>Status</span>
-            <Badge variant={coop.subscription_status === "active" ? "default" : "secondary"}>
-              {coop.subscription_status?.toUpperCase()}
+            <Badge
+              variant={
+                isExpired
+                  ? "destructive"
+                  : isTrialExpiringSoon
+                  ? "secondary"
+                  : coop.subscription_status === "active"
+                  ? "default"
+                  : "outline"
+              }
+            >
+              {isExpired ? "EXPIRED" : coop.subscription_status?.toUpperCase()}
             </Badge>
-          </div>
+          </div>          
 
-          {coop.trial_ends_at && (
+          {isTrialActive && coop?.trial_ends_at && (
             <div className="flex justify-between">
               <span>Trial Ends</span>
               <span>
-                {new Date(coop.trial_ends_at).toLocaleDateString()}
+                {new Date(coop?.trial_ends_at).toLocaleDateString()} | <span>{remainingDays} day{remainingDays === 1 ? "" : "s"} Remaining</span>
+              </span>
+            </div>
+          )}
+
+          {isActive && subscriptionRemainingDays !== null && (
+            <div className="flex justify-between">
+              <span>Billing Cycle Ends In</span>
+              <span>
+                {subscriptionRemainingDays} day
+                {subscriptionRemainingDays === 1 ? "" : "s"}
               </span>
             </div>
           )}
@@ -136,6 +188,24 @@ export default function SettingsPage() {
               {new Date(coop.created_at).toLocaleDateString()}
             </span>
           </div>
+
+          {isTrialExpiringSoon && (
+            <p className="text-sm text-yellow-600">
+              Your trial is about to expire. Subscribe to avoid interruption.
+            </p>
+          )}
+
+          {isExpired && (
+            <p className="text-sm text-red-600">
+              Your trial has expired. Please subscribe to continue using the system.
+            </p>
+          )}
+
+          {(isTrialExpiringSoon || isExpired) && (
+            <Button className="w-full mt-4">
+              Subscribe Now
+            </Button>
+          )}
 
         </CardContent>
       </Card>

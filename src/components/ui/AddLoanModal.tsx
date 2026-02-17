@@ -38,7 +38,7 @@ export default function AddLoanModal({ isOpen, onClose, onSaved }: any) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [members, setMembers] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
+  //const [success, setSuccess] = useState(false)
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -70,17 +70,21 @@ export default function AddLoanModal({ isOpen, onClose, onSaved }: any) {
         Math.max(0, Number(values.term))
       )
 
-      setSuccess(true)
+      //setSuccess(true)
 
       toast.success("Loan successfully created.")
 
-      onSaved(newLoan)
+      onClose()
+      form.reset()
+      onSaved()
+
+      /* onSaved(newLoan)
 
       setTimeout(() => {
         onClose()
         form.reset()
         setSuccess(false)
-      }, 900)
+      }, 900) */
 
     } catch (error) {
       toast.error("Error", {
