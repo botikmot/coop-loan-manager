@@ -46,16 +46,10 @@ export default function LoanTable(
     setSortBy, 
     sortDir, 
     setSortDir, 
-    onPageChange, 
+    onPageChange,
     onAddPayment 
   }: LoanTableProps) {
   
-  /* const pageSize = 10
-  const paginatedLoans = useMemo(() => {
-    const start = (page - 1) * pageSize
-    return filteredLoans.slice(start, start + pageSize)
-  }, [filteredLoans, page]) */
-
   //Filter loans by member name
   const filteredLoans = useMemo(() => {
     return loans.filter((loan) =>
@@ -157,7 +151,6 @@ export default function LoanTable(
                       View Summary
                     </TooltipContent>
                   </Tooltip>
-
                 </div>
               </TableCell>
             </TableRow>

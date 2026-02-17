@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Modal from "./Modal"
 import { getMembers } from "@/src/services/memberService"
-import { createLoan } from "@/src/services/loanService"
+import { createLoan, updateLoan } from "@/src/services/loanService"
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,8 +33,15 @@ type FormValues = {
   term: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function AddLoanModal({ isOpen, onClose, onSaved }: any) {
+interface AddLoanModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onSaved: () => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  loan?: any   // 👈 edit mode when provided
+}
+
+export default function AddLoanModal({ isOpen, onClose, onSaved, loan }: AddLoanModalProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [members, setMembers] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -48,6 +55,19 @@ export default function AddLoanModal({ isOpen, onClose, onSaved }: any) {
       term: "",
     },
   })
+
+  console.log('loan update::',loan)
+
+  useEffect(() => {
+    if (!loan || !isOpen || members.length === 0) return
+
+    form.reset({
+      memberId: String(loan.member_id),
+      principal: Number(loan.principal_amount).toLocaleString(),
+      interest: String(loan.interest_rate),
+      term: String(loan.term_months),
+    })
+  }, [loan, isOpen, members, form])
 
   useEffect(() => {
     const load = async () => {
@@ -63,28 +83,31 @@ export default function AddLoanModal({ isOpen, onClose, onSaved }: any) {
       
       const principalNumber = Math.max(0, Number(values.principal.replace(/,/g, "")))
 
-      await createLoan(
-        values.memberId,
-        principalNumber,
-        Math.max(0, Number(values.interest)),
-        Math.max(0, Number(values.term))
-      )
+      if (loan) {
+        // ✅ UPDATE MODE
+        await updateLoan(
+          loan.id,
+          principalNumber,
+          Number(values.interest),
+          Number(values.term)
+        )
 
-      //setSuccess(true)
+        toast.success("Loan updated successfully.")
+      } else {
+        // ✅ CREATE MODE
+        await createLoan(
+          values.memberId,
+          principalNumber,
+          Number(values.interest),
+          Number(values.term)
+        )
 
-      toast.success("Loan successfully created.")
+        toast.success("Loan successfully created.")
+      }
 
       onClose()
       form.reset()
       onSaved()
-
-      /* onSaved(newLoan)
-
-      setTimeout(() => {
-        onClose()
-        form.reset()
-        setSuccess(false)
-      }, 900) */
 
     } catch (error) {
       console.log(error)
@@ -97,7 +120,7 @@ export default function AddLoanModal({ isOpen, onClose, onSaved }: any) {
   }
 
   return (
-    <Modal open={isOpen} onClose={onClose} title="Add Loan">
+    <Modal open={isOpen} onClose={onClose} title={loan ? "Edit Loan" : "Add Loan"}>
       <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
         {/* Member Select */}
@@ -110,7 +133,8 @@ export default function AddLoanModal({ isOpen, onClose, onSaved }: any) {
               <FormLabel>Member</FormLabel>
               <Select
                 onValueChange={field.onChange}
-                value={field.value}
+                value={field.value || ""}
+                disabled={!!loan}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -120,7 +144,7 @@ export default function AddLoanModal({ isOpen, onClose, onSaved }: any) {
 
                 <SelectContent>
                   {members.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>
+                    <SelectItem key={m.id} value={String(m.id)}>
                       {m.full_name}
                     </SelectItem>
                   ))}

@@ -35,6 +35,7 @@ export async function getLoans({
       created_at,
       members(id, full_name)
     `, { count: "exact" })
+    .is("deleted_at", null) // ✅ ignore soft deleted
     .range(from, to)
     .order(sortBy, { ascending: sortDir === "asc" })
 
@@ -88,6 +89,7 @@ export const getLoanById = async (loanId: string) => {
     .from("loans")
     .select("*")
     .eq("id", loanId)
+    .is("deleted_at", null)
     .single()
 
   if (loanError) throw loanError
@@ -115,4 +117,47 @@ export const getPaymentsByLoanId = async (loanId: string) => {
 
   if (error) throw error
   return data || []
+}
+
+export const softDeleteLoan = async (loanId: string) => {
+  const coopId = await getUserCoopId()
+  if (!coopId) throw new Error("Unauthorized")
+
+  const { error } = await supabase
+    .from("loans")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", loanId)
+    .eq("coop_id", coopId)
+
+  if (error) throw error
+}
+
+export const updateLoan = async (
+  loanId: string,
+  principal: number,
+  interest_rate: number,
+  term: number
+) => {
+  const coopId = await getUserCoopId()
+  if (!coopId) throw new Error("Unauthorized")
+
+  const { interest, total, monthly } =
+    calculateLoan(principal, interest_rate, term)
+
+  const { error } = await supabase
+    .from("loans")
+    .update({
+      principal_amount: principal,
+      interest_rate,
+      interest_amount: interest,
+      term_months: term,
+      total_payable: total,
+      monthly_payment: monthly,
+      remaining_balance: total,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", loanId)
+    .eq("coop_id", coopId)
+
+  if (error) throw error
 }

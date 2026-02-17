@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useRef } from "react"
 import { useParams } from "next/navigation"
-import { getLoanById, getPaymentsByLoanId } from "@/src/services/loanService"
+import { getLoanById, getPaymentsByLoanId, softDeleteLoan } from "@/src/services/loanService"
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,16 @@ import { useRouter } from "next/navigation"
 import { useReactToPrint } from "react-to-print"
 import { getUserCoopName } from "@/src/lib/auth"
 import { formatDate } from "@/src/utils/formatDate"
+import ConfirmationModal from "@/src/components/ui/ConfirmationModal"
+import { toast } from "sonner"
+import AddLoanModal from "@/src/components/ui/AddLoanModal"
+import { Pencil } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export default function LoanDetailsPage() {
   const params = useParams()
@@ -29,6 +39,11 @@ export default function LoanDetailsPage() {
   const [paymentLoanId, setPaymentLoanId] = useState<string | null>(null)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [coopName, setCoopName] = useState("")
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [loadingDelete, setLoadingDelete] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [editLoan, setEditLoan] = useState<any | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   const loadData = async () => {
       if (!loanId) return
@@ -95,6 +110,10 @@ export default function LoanDetailsPage() {
     setShowPaymentModal(true)
   }
 
+  const dataToBeDeleted = (id: string) => {
+    setDeleteId(id)
+  }
+
   console.log('loan::',loan)
   const handlePrintSummary = useReactToPrint({
     contentRef: printRef,
@@ -143,7 +162,7 @@ export default function LoanDetailsPage() {
               {loan.status.toUpperCase()}
             </Badge>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4">
+          <CardContent className="grid grid-cols-2 gap-4 relative">
             <div>
               <p><strong>Member:</strong> {loan.memberName}</p>
               <p><strong>Principal Amount:</strong> {formatCurrency(loan.principal_amount)}</p>
@@ -156,6 +175,28 @@ export default function LoanDetailsPage() {
               <p><strong>Term:</strong> {loan.term_months} months</p>
               <p><strong>Date Issued:</strong> {new Date(loan.created_at).toLocaleDateString()}</p>
             </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                      variant="ghost"
+                      size="sm"
+                      className="cursor-pointer absolute right-5 bottom-0"
+                      disabled={payments.length > 0}
+                      onClick={() => {
+                        setEditLoan(loan)
+                        setShowEditModal(true)
+                      }}
+                    >
+                    <Pencil size={12}/>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  Update
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            {/*  */}
           </CardContent>
         </Card>
 
@@ -221,6 +262,43 @@ export default function LoanDetailsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <div className="flex px-6">
+          <Button 
+            variant="link" 
+            className="cursor-pointer text-xs text-gray-400" 
+            onClick={() => dataToBeDeleted(loan.id)}
+          >
+            Delete this Loan?
+          </Button>
+      </div>
+
+      <ConfirmationModal
+        open={!!deleteId}
+        title="Delete this Loan?"
+        message={`This loan will be permanently removed.`}
+        confirmText="Delete"
+        loading={loadingDelete}
+        onClose={() => setDeleteId(null)}
+        onConfirm={async () => {
+          if (!deleteId) return
+          setLoadingDelete(true)
+
+          await softDeleteLoan?.(deleteId)
+
+          setLoadingDelete(false)
+          setDeleteId(null)
+          toast.success("Loan successfully deleted.")
+          router.back()
+        }}
+      />
+
+      <AddLoanModal
+        isOpen={showEditModal}
+        loan={editLoan}
+        onClose={() => setShowEditModal(false)}
+        onSaved={loadData}
+      />
 
       <PaymentModal
         open={showPaymentModal}
