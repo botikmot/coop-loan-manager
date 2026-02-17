@@ -51,6 +51,8 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname.startsWith("/auth/login") ||
     req.nextUrl.pathname.startsWith("/auth/register")
 
+  const isSubscribePage = req.nextUrl.pathname.startsWith("/subscribe")
+
   if (!session && !isAuthPage) {
     return NextResponse.redirect(new URL("/auth/login", req.url))
   }
@@ -58,6 +60,51 @@ export async function middleware(req: NextRequest) {
   if (session && isAuthPage) {
     return NextResponse.redirect(new URL("/dashboard", req.url))
   }
+
+  // ✅ If logged in, check subscription
+  if (session) {
+    const { data: userProfile } = await supabase
+      .from("users")
+      .select(`
+        coop_id,
+        cooperatives (
+          trial_ends_at,
+          subscription_status,
+          subscription_ends_at,
+        )
+      `)
+      .eq("id", session.user.id)
+      .single()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const coop = (userProfile as any)?.cooperatives
+    const now = new Date()
+
+    const trialExpired =
+      coop?.trial_ends_at &&
+      new Date(coop.trial_ends_at) < now
+
+    /* const subscriptionExpired =
+      coop?.subscription_status !== "active" ||
+      (coop?.subscription_ends_at &&
+        new Date(coop.subscription_ends_at) < now) */
+
+    const hasAccess =
+      coop?.is_lifetime ||
+      (!trialExpired) ||
+      coop?.subscription_status === "active"
+
+    // 🚫 BLOCK ACCESS IF EXPIRED
+    if (!hasAccess && !isSubscribePage) {
+      return NextResponse.redirect(new URL("/subscribe", req.url))
+    }
+
+    // ✅ If subscribed and trying to access subscribe page → go dashboard
+    if (hasAccess && isSubscribePage) {
+      return NextResponse.redirect(new URL("/dashboard", req.url))
+    }
+  }
+
 
   return res
 }

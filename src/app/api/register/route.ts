@@ -21,11 +21,12 @@ export async function POST(req: NextRequest) {
     if (!data?.user) throw new Error("Failed to create auth user")
 
     const authUser = data.user  // ✅ now authUser is type User
+    const TRIAL_DAYS = 14 // 14-day Trial
 
     // 2️⃣ Create Cooperative
     const { data: coop, error: coopError } = await supabaseAdmin
       .from("cooperatives")
-      .insert({ name: coopName, email })
+      .insert({ name: coopName, email, trial_ends_at: new Date(Date.now() + TRIAL_DAYS * 86400000) })
       .select()
       .single()
     if (coopError) throw coopError
