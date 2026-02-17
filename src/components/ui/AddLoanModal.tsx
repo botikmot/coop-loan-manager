@@ -63,7 +63,7 @@ export default function AddLoanModal({ isOpen, onClose, onSaved }: any) {
       
       const principalNumber = Math.max(0, Number(values.principal.replace(/,/g, "")))
 
-      const newLoan = await createLoan(
+      await createLoan(
         values.memberId,
         principalNumber,
         Math.max(0, Number(values.interest)),
@@ -87,6 +87,7 @@ export default function AddLoanModal({ isOpen, onClose, onSaved }: any) {
       }, 900) */
 
     } catch (error) {
+      console.log(error)
       toast.error("Error", {
         description: "Failed to save loan.",
       })
