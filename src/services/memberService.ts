@@ -39,16 +39,18 @@ export const createMember = async (
 
 export const updateMember = async (
   id: string,
-  name: string,
-  contact_number: string,
-  address: string
+  member: {
+    name: string
+    contact_number: string
+    address: string
+  }
 ) => {
   const { error } = await supabase
     .from("members")
     .update({
-      full_name: name,
-      contact_number,
-      address,
+      full_name: member.name,
+      contact_number: member.contact_number,
+      address: member.address,
     })
     .eq("id", id)
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/src/lib/supabase"
-import { updateMember } from "@/src/services/memberService"
+//import { updateMember } from "@/src/services/memberService"
 
 export default function EditMemberPage() {
   const { id } = useParams()
@@ -37,7 +37,7 @@ export default function EditMemberPage() {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    await updateMember(id as string, fullName, contact, address)
+    //await updateMember(id as string, fullName, contact, address)
 
     router.push("/members")
   }
