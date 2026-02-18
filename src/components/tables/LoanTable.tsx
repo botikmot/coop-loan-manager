@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/src/components/ui/Table"
 import Link from "next/link"
-import { PlusCircle, FileText } from "lucide-react"
+import { FileText } from "lucide-react"
 import {
   Tooltip,
   TooltipContent,
@@ -33,7 +33,7 @@ interface LoanTableProps {
   sortDir: "asc" | "desc"
   setSortDir: React.Dispatch<React.SetStateAction<"asc" | "desc">>
   onPageChange: (page: number) => void
-  onAddPayment?: (loanId: string) => void
+  //onAddPayment?: (loanId: string) => void
 }
 
 export default function LoanTable(
@@ -47,7 +47,7 @@ export default function LoanTable(
     sortDir, 
     setSortDir, 
     onPageChange,
-    onAddPayment 
+    //onAddPayment 
   }: LoanTableProps) {
   
   //Filter loans by member name
@@ -97,7 +97,7 @@ export default function LoanTable(
           <TableHead className="font-bold">Monthly</TableHead>
           <TableHead className="font-bold">Status</TableHead>
           <TableHead className="font-bold">Balance</TableHead>
-          <TableHead className="font-bold">Action</TableHead>
+          <TableHead className="font-bold">Details</TableHead>
         </TableRow>
       </TableHeader>
 
@@ -120,7 +120,7 @@ export default function LoanTable(
                 <div className="flex gap-2">
 
                   {/* Record Payment */}
-                  {loan.status !== "completed" && (
+                  {/* {loan.status !== "completed" && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -135,7 +135,7 @@ export default function LoanTable(
                         Record Payment
                       </TooltipContent>
                     </Tooltip>
-                  )}
+                  )} */}
 
                   {/* Summary */}
                   <Tooltip>
@@ -148,7 +148,7 @@ export default function LoanTable(
                       </Link>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
-                      View Summary
+                      View Details
                     </TooltipContent>
                   </Tooltip>
                 </div>

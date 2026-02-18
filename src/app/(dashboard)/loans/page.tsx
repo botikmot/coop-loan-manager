@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { getLoans } from "@/src/services/loanService"
 import LoanTable from "@/src/components/tables/LoanTable"
 import AddLoanModal from "@/src/components/ui/AddLoanModal"
-import PaymentModal from "@/src/components/ui/PaymentModal"
+//import PaymentModal from "@/src/components/ui/PaymentModal"
 import { useDebounce } from "@/src/utils/useDebounce"
 
 export default function LoansPage() {
@@ -13,8 +13,8 @@ export default function LoansPage() {
   const [loans, setLoans] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
-  const [paymentLoanId, setPaymentLoanId] = useState<string | null>(null)
-  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  //const [paymentLoanId, setPaymentLoanId] = useState<string | null>(null)
+  //const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const pageSize = 10
@@ -97,10 +97,10 @@ export default function LoansPage() {
          sortDir={sortDir}
          setSortDir={setSortDir}
          onPageChange={setPage}
-         onAddPayment={(loanId) => {
+         /* onAddPayment={(loanId) => {
             setPaymentLoanId(loanId)
             setShowPaymentModal(true)
-          }}
+          }} */
         />
       </div>
 
@@ -110,12 +110,12 @@ export default function LoansPage() {
         onSaved={fetchLoans} // can reuse the same fetchLoans
       />
 
-      <PaymentModal
+      {/* <PaymentModal
         open={showPaymentModal}
         loanId={paymentLoanId}
         onClose={() => setShowPaymentModal(false)}
         onSaved={fetchLoans}
-      />
+      /> */}
     </div>
   )
 }

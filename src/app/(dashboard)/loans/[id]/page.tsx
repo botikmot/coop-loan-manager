@@ -263,15 +263,17 @@ export default function LoanDetailsPage() {
         </Card>
       </div>
 
-      <div className="flex px-6">
-          <Button 
-            variant="link" 
-            className="cursor-pointer text-xs text-gray-400" 
-            onClick={() => dataToBeDeleted(loan.id)}
-          >
-            Delete this Loan?
-          </Button>
-      </div>
+      {/* { payments.length === 0 && ( */}
+        <div className="flex px-6">
+            <Button 
+              variant="link" 
+              className="cursor-pointer text-xs text-gray-400" 
+              onClick={() => dataToBeDeleted(loan.id)}
+            >
+              Delete this Loan?
+            </Button>
+        </div>
+     {/*  )} */}
 
       <ConfirmationModal
         open={!!deleteId}
